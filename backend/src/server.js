@@ -1,10 +1,17 @@
 import express from "express"
 import router from "./routes/notes.routes.js"
+import dotenv from "dotenv"
+import { connectDB } from "./config/db.js"
+
 
 const app = express()
+const PORT = process.env.PORT || 5001
+
+dotenv.config()
+connectDB()
 
 app.use("/api/notes", router)
 
-app.listen(5001, () => {
-    console.log("Server started on port 5001")
+app.listen(PORT, () => {
+    console.log("Server started on PORT: ", PORT)
 })
