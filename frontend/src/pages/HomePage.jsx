@@ -3,6 +3,7 @@ import Navbar from "../components/Navbar"
 import RateLimitedUI from "../components/RateLimitedUI"
 import axios from "axios"
 import toast from "react-hot-toast"
+import NoteCard from "../components/NoteCard"
 
 const HomePage = () => {
   const [isRateLimited, setIsRateLimited] = useState(false)
@@ -48,9 +49,7 @@ const HomePage = () => {
             {notes.map(note => {
             // console.log("Note in jsx", note)
               return(
-              <div>
-                {note.title} | {note.content}
-              </div>
+                <NoteCard key={note._id} note={note} />
             )})}
           </div>
         )}
