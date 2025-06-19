@@ -1,4 +1,4 @@
-import { Route, Routes } from "react-router"
+import { Route, Routes } from "react-router-dom"
 import HomePage from "./pages/HomePage.jsx"
 import CreatNote from "./pages/CreatNote.jsx"
 import NoteDetail from "./pages/NoteDetail.jsx"
