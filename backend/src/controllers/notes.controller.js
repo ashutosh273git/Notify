@@ -29,7 +29,7 @@ export async function getNoteById(req, res) {
             return res.status(404).json({message: "No such note exists for this id"})
         }
         
-        return res.status(404).json({
+        return res.status(200).json({
             message: "Note fetched",
             note: note
         })
