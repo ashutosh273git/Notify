@@ -3,8 +3,15 @@ import mongoose from "mongoose"
 
 export async function getAllNotes(req, res) {
     try {
-        const notes = await Note.find().sort({createdAt: -1}) // .sort(-1) will show the newest first 
+        const notes = await Note.find({user: req.user._id}).sort({createdAt: -1}) // .sort(-1) will show the newest first 
 
+        if (notes.length === 0) {
+            return res.status(200).json({
+              message: "No notes yet",
+              notes: [],
+            });
+        }
+          
         res.status(200).json({
             message: "Notes fetched successfully",
             notes: notes
@@ -23,7 +30,7 @@ export async function getNoteById(req, res) {
             return res.status(404).json({message: "No such note exists - invalid id format"})
         }
 
-        const note = await Note.findById(id)
+        const note = await Note.findOne({_id: id, user: req.user._id})
 
         if(!note){
             return res.status(404).json({message: "No such note exists for this id"})
@@ -43,7 +50,7 @@ export async function getNoteById(req, res) {
 export async function createNote(req, res) {
     try {
         const {title, content} = req.body
-        const note = new Note({title, content})
+        const note = new Note({title, content, user: req.user._id})
 
         const savedNote = await note.save()
         res.status(201).json({
@@ -67,7 +74,7 @@ export async function updateNote(req, res) {
         }
 
         const updatedNote = await Note.findByIdAndUpdate(
-            id,
+            {_id: id, user: req.user._id},
             {title, content},
             {new: true} // it will show the update note
         ) 
@@ -93,7 +100,7 @@ export async function deleteNote(req, res) {
             return res.status(404).json({message: "No such no note exists - invalid id format"})
         }
 
-        const deleteNote = await Note.findByIdAndDelete(id)
+        const deleteNote = await Note.findOneAndDelete({_id: id, user: req.user._id})
 
         if(!deleteNote){
             return res.status(404).json({message: "No such note exist for this id"})
