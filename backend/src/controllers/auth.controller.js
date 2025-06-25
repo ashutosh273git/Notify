@@ -133,3 +133,20 @@ export const logout = async (req, res) => {
     });
   }
 };
+
+export const getMe = async (req, res) => {
+  try {
+    const userToReturn = req.user.toObject()
+    delete userToReturn.password
+
+    return res.status(200).json({
+        message: "User fetched successfully",
+        user: userToReturn
+    })
+  } catch (error) {
+    console.error("Error in getMe", error);
+    res.status(500).json({
+      message: "Internal server error",
+    });
+  }
+}

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 import toast from "react-hot-toast"
-import { Link, useNavigate, useParams } from "react-router"
+import { Link, useNavigate, useParams } from "react-router-dom"
 import api from "../libs/axios"
 import { ArrowLeftIcon, LoaderIcon, Trash2Icon } from "lucide-react"
 
@@ -8,12 +8,29 @@ const NoteDetail = () => {
     const [note, setNote] = useState(null)
     const [loading, setLoading] = useState(true)
     const [saving, setSaving] = useState(false)
-
-    const navigate = useNavigate()
+    const [authLoading, setAuthLoading] = useState(true)
 
     const {id} = useParams()
+    const navigate = useNavigate()
 
     useEffect(() => {
+      const checkAuth = async () => {
+        try {
+          await api.get("/auth/me");
+        } catch (error) {
+          toast.error("Please login to view note");
+          navigate("/login");
+        } finally {
+          setAuthLoading(false);
+        }
+      };
+    
+      checkAuth();
+    }, [navigate]);
+
+    useEffect(() => {
+      if (authLoading) return
+
       const fetchNote = async() => {
         try {
           const res = await api.get(`/notes/${id}`)
@@ -27,13 +44,13 @@ const NoteDetail = () => {
       }
 
       fetchNote()
-    }, [id])  
+    }, [id, authLoading])  
     
     const handleDelete = async() => {
       if (!window.confirm("Are you sure you want to delete this note")) return
 
       try {
-        await api.delete(`notes/${id}`)
+        await api.delete(`/notes/${id}`)
         toast.success("Note deleted successfully")
         navigate("/")
       } catch (error) {
@@ -61,14 +78,22 @@ const NoteDetail = () => {
         setSaving(false)
       }
     }
-  
-    if(loading) {
+
+    if (authLoading || loading) {
       return (
-        <div className="min-h-screen bg-base-200 flex items-center justify-center">
-          <LoaderIcon className="animate-spin size-10" />
+        <div className="min-h-screen bg-base-200 flex items-center justify-center text-primary">
+          Checking authentication...
         </div>
       )
     }
+  
+    // if(loading) {
+    //   return (
+    //     <div className="min-h-screen bg-base-200 flex items-center justify-center">
+    //       <LoaderIcon className="animate-spin size-10" />
+    //     </div>
+    //   )
+    // }
 
   return (
     <div className="min-h-screen bg-base-200">

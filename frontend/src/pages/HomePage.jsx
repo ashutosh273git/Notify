@@ -5,33 +5,51 @@ import api from "../libs/axios"
 import toast from "react-hot-toast"
 import NoteCard from "../components/NoteCard"
 import NotesNotFound from "../components/NotesNotFound"
+import { useNavigate } from "react-router-dom"
 
 const HomePage = () => {
   const [isRateLimited, setIsRateLimited] = useState(false)
   const [notes, setNotes] = useState([])
   const [loading, setLoading] = useState(true)
+  const [authLoading, setAuthLoading] = useState(true)
 
+  const navigate = useNavigate()
+  
   useEffect(() => {
-    const fetchNotes = async () => {
+    const checkAuthAndFetchNotes = async () => {
       try {
+        // Step 1: Check auth
+        await api.get("/auth/me")
+
+        // Step 2: Fetch notes
         const res = await api.get("/notes")
-        // console.log(res.data)
-        // console.log(Array.isArray(res.data))
         setNotes(res.data.notes)
         setIsRateLimited(false)
-      }catch (error) {
-        console.error("Error fetching notes", error)
-        if(error.response?.status === 429){
+      } catch (error) {
+        if (error.response?.status === 401) {
+          toast.error("Please login to view notes")
+          navigate("/login")
+        } else if (error.response?.status === 429) {
           setIsRateLimited(true)
         } else {
           toast.error("Failed to load notes")
         }
-      }finally {
+      } finally {
+        setAuthLoading(false)
         setLoading(false)
       }
     }
-    fetchNotes()
-  }, [])
+
+    checkAuthAndFetchNotes()
+  }, [navigate])
+
+  if (authLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center text-primary">
+        Checking authentication...
+      </div>
+    )
+  }
 
   // console.log("Notes to render", notes)
   return (
