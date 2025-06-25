@@ -1,6 +1,7 @@
 import { useState } from "react";
 import api from "../libs/axios";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
+import toast from "react-hot-toast";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -8,45 +9,87 @@ const Login = () => {
     email: "",
     password: "",
   });
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (e) =>
     setForm({ ...form, [e.target.name]: e.target.value });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    const { email, password } = form;
+    if (!email || !password) {
+      toast.error("All fields are required");
+      return;
+    }
+
+    setLoading(true);
     try {
-      const res = await api.post("/auth/login", form);
-      console.log("Login success:", res.data);
+      await api.post("/auth/login", form);
+      toast.success("Logged in successfully");
       navigate("/");
     } catch (err) {
-      alert(err.response?.data?.message || "Login failed");
+      toast.error(err.response?.data?.message || "Login failed");
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className="max-w-md mx-auto mt-20 p-6 shadow rounded bg-white">
-      <h2 className="text-2xl font-bold mb-4">Log In</h2>
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <input
-          name="email"
-          placeholder="Email"
-          type="email"
-          className="w-full border px-4 py-2 rounded"
-          value={form.email}
-          onChange={handleChange}
-        />
-        <input
-          name="password"
-          placeholder="Password"
-          type="password"
-          className="w-full border px-4 py-2 rounded"
-          value={form.password}
-          onChange={handleChange}
-        />
-        <button className="w-full bg-green-600 text-white py-2 rounded hover:bg-green-700">
-          Log In
-        </button>
-      </form>
+    <div className="min-h-screen bg-base-200 flex items-center justify-center px-4">
+      <div className="w-full max-w-md bg-base-100 shadow-lg rounded-xl p-8">
+        <h2 className="text-2xl font-bold text-center mb-6 text-primary">
+          Login to Your Account
+        </h2>
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="form-control">
+            <label className="label">
+              <span className="label-text">Email</span>
+            </label>
+            <input
+              name="email"
+              type="email"
+              placeholder="you@example.com"
+              className="input input-bordered"
+              value={form.email}
+              onChange={handleChange}
+            />
+          </div>
+
+          <div className="form-control">
+            <label className="label">
+              <span className="label-text">Password</span>
+            </label>
+            <input
+              name="password"
+              type="password"
+              placeholder="••••••••"
+              className="input input-bordered"
+              value={form.password}
+              onChange={handleChange}
+            />
+          </div>
+
+          <button
+            className="btn btn-primary w-full"
+            disabled={loading}
+            type="submit"
+          >
+            {loading ? "Logging in..." : "Login"}
+          </button>
+        </form>
+
+        <p className="mt-4 text-center text-sm">
+          Don’t have an account?{" "}
+          <Link
+            to="/signup"
+            className="text-primary font-medium hover:underline"
+          >
+            Sign up
+          </Link>
+        </p>
+      </div>
     </div>
   );
 };
